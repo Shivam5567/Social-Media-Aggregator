@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import Post from '../components/Post';
 
@@ -8,11 +8,10 @@ function HomePage() {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   
-  // State for the new post form
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   
-  const navigate = useNavigate(); // Get the navigate function
+  const navigate = useNavigate();
 
   const fetchPosts = async () => {
     try {
@@ -43,6 +42,7 @@ function HomePage() {
       
       setImage(null);
       setCaption('');
+      document.getElementById('image-input').value = null; // Clear file input
       fetchPosts();
     } catch (error) {
       console.error('Failed to create post:', error);
@@ -50,29 +50,28 @@ function HomePage() {
     }
   };
 
-  // Function to handle logout
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     api.defaults.headers.common['Authorization'] = null;
-    navigate('/login'); // Redirect to login page
+    navigate('/login');
   };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px' }}>
         <h1>Home Feed</h1>
-        <button onClick={handleLogout}>Logout</button> {/* Add logout button */}
+        <button onClick={handleLogout}>Logout</button>
       </div>
 
       <div style={{ border: '1px solid #ddd', padding: '16px', margin: '16px auto', maxWidth: '600px', backgroundColor: '#fff' }}>
         <h2>Create a New Post</h2>
         <form onSubmit={handlePostSubmit}>
           <div>
-            <label htmlFor="image">Image:</label>
+            <label htmlFor="image-input">Image:</label>
             <input
               type="file"
-              id="image"
+              id="image-input"
               accept="image/*"
               onChange={(e) => setImage(e.target.files[0])}
               required
@@ -95,7 +94,7 @@ function HomePage() {
       
       <div>
         {posts.map(post => (
-          <Post key={post.id} post={post} />
+          <Post key={post.id} post={post} onUpdate={fetchPosts} />
         ))}
       </div>
     </div>
