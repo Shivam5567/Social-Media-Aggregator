@@ -1,4 +1,3 @@
-// src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
@@ -17,7 +16,6 @@ function ProfilePage() {
   const loggedInUserId = token ? jwtDecode(token).user_id : null;
 
   const fetchProfile = async () => {
-    setLoading(true);
     try {
       const response = await api.get(`/api/users/profiles/${username}/`);
       setProfile(response.data);
@@ -30,25 +28,31 @@ function ProfilePage() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchProfile();
   }, [username]);
+  
+  const handleFollowToggle = async () => {
+    try {
+      await api.post(`/api/users/profiles/${username}/follow/`);
+      fetchProfile();
+    } catch (err) {
+      console.error('Failed to follow/unfollow:', err);
+    }
+  };
 
   const handlePictureUpload = async (e) => {
     e.preventDefault();
     if (!newProfilePicture) return;
-
     const formData = new FormData();
     formData.append('profile_picture', newProfilePicture);
-
     try {
       await api.patch(`/api/users/profiles/${username}/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      document.getElementById('profilePicture-input').value = null; // Clear file input
       fetchProfile();
       setNewProfilePicture(null);
+      document.getElementById('profilePicture-input').value = null;
     } catch (err) {
       console.error('Failed to upload profile picture:', err);
       setError('Failed to upload picture.');
@@ -63,7 +67,7 @@ function ProfilePage() {
 
   return (
     <div>
-      <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+      <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '40px' }}>
         <img
           src={profile.profile_picture || 'https://via.placeholder.com/150'}
           alt={`${profile.username}'s profile`}
@@ -71,10 +75,22 @@ function ProfilePage() {
         />
         <div>
           <h2>{profile.username}</h2>
+          
+          {!isOwner && (
+            <button onClick={handleFollowToggle}>
+              {profile.is_following ? 'Unfollow' : 'Follow'}
+            </button>
+          )}
+
+          <div style={{ display: 'flex', gap: '20px', margin: '20px 0' }}>
+            <span><strong>{profile.posts.length}</strong> posts</span>
+            <span><strong>{profile.followers_count}</strong> followers</span>
+            <span><strong>{profile.following_count}</strong> following</span>
+          </div>
           <p>{profile.bio || 'No bio yet.'}</p>
         </div>
       </div>
-
+      
       {isOwner && (
         <div style={{ padding: '16px' }}>
           <form onSubmit={handlePictureUpload}>

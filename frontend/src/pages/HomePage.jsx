@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
@@ -8,6 +7,7 @@ function HomePage() {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   
+  // State for the new post form
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   
@@ -15,17 +15,18 @@ function HomePage() {
 
   const fetchPosts = async () => {
     try {
-      const response = await api.get('/api/posts/');
+      // Fetches the current user follows
+      const response = await api.get('/api/feed/');
       setPosts(response.data);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
-      setError('Failed to fetch posts. You may need to log in.');
+      setError('Failed to fetch posts. You may need to log in or follow someone.');
     }
   };
   
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, []); 
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
